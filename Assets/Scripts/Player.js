@@ -81,3 +81,6 @@ function Die() {
 	yield WaitForSeconds(1.5);
 	Application.LoadLevel("GameOver");
 }
+
+
+//spiteRenderer.sprite.textureRect.width / spiteRenderer.bounds.size.x (or from height / y  ) at a scale = 1

@@ -3,7 +3,7 @@
 var customGuiStyle : GUIStyle;
 
 private var score : int = 0;
-private var scoreToSkip : int = 1;
+private var scoreToSkip : int = 2;
 
 static var obstacleSpeed : float = 1.5f;
 static var obstacleSpeedOffset : float = 1f;
@@ -31,5 +31,6 @@ function UpdateScore() {
 }
 
 function getScore() {
-	return score - scoreToSkip > 1 ? score - scoreToSkip : 0;
+	
+	return score > scoreToSkip ? score - scoreToSkip : 0;
 }
