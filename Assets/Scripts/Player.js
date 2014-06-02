@@ -11,13 +11,14 @@ function Awake() {
 	BGM = GameObject.Find("BGM");
 	
 	if (Screen.dpi < 320) {
-		var scale = .8f;
-		this.transform.localScale = Vector3(scale, scale, scale);
+		var scale = transform.localScale.x * .8;
+		transform.localScale = Vector3(scale, scale, scale);
 	}
 }
 
 function Start() {
 	BGM.audio.Play();
+	//rigidbody2D.velocity = Vector3(Score.speed * 60,0,0);
 }
 
 function FadeOutSound() {
@@ -36,7 +37,8 @@ function FadeOutSound() {
 
 function Jump() {
 	audio.PlayOneShot(jump, 1);
-	rigidbody2D.velocity = Vector2.zero;
+	//rigidbody2D.velocity = Vector3(Score.speed * 60,0,0);
+	rigidbody2D.velocity = Vector3.zero;
 	rigidbody2D.AddForce(jumpForce);
 }
 
@@ -45,9 +47,20 @@ function Update () {
 		return;
 	}
 
-	// Jump
+	// scroll
 	transform.position = new Vector3(transform.position.x + Score.speed, transform.position.y, transform.position.z);
+	/*
+	var nextPosition : Vector3 = new Vector3(transform.position.x + Score.speed, transform.position.y, transform.position.z);
 	
+	
+//	transform.position = Vector3.Lerp(transform.position, nextPosition, Time.deltaTime * 100);
+	
+	var smooth : Vector3 = Vector3.zero;
+	var speed : float = Score.speed / 1000;
+	transform.position = Vector3.SmoothDamp(transform.position, nextPosition, smooth, speed);
+	
+	*/
+	// Jump
 	if (Input.GetMouseButtonDown(0) || Input.GetKeyUp("space")) {
 		Jump();
 	} else if (Input.touchCount > 0) {

@@ -1,14 +1,14 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/GameOverScore.js">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/CameraScroll.js">
     <Files>
-      <File FileName="Assets/Scripts/Player.js" Line="14" Column="17" />
-      <File FileName="Assets/CameraScroll.js" Line="2" Column="1" />
-      <File FileName="Assets/Scripts/Score.js" Line="25" Column="1" />
-      <File FileName="Assets/GameOverScore.js" Line="25" Column="16" />
-      <File FileName="Assets/Start.js" Line="5" Column="9" />
-      <File FileName="Assets/Scripts/Generate.js" Line="11" Column="2" />
-      <File FileName="Assets/Scripts/Obstacle.js" Line="4" Column="22" />
+      <File FileName="Assets/Scripts/CameraScroll.js" Line="11" Column="1" />
+      <File FileName="Assets/Scripts/Player.js" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/Score.js" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/Generate.js" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/Obstacle.js" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/Start.js" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/CameraScroll.js" Line="38" Column="2" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
