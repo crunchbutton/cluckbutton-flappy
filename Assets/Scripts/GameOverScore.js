@@ -15,9 +15,7 @@ function OnGUI () {
 	GUI.color = Color.white;
 	myStyle.font = myFont;
 	
-	//GUILayout.Label(" Score: " + score.ToString(), myStyle);
-	
-	GUILayout.Label(Screen.dpi.ToString(), myStyle);
+	GUILayout.Label(" Score: " + score.ToString(), myStyle);
 }
 
 function Update() {

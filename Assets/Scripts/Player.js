@@ -75,7 +75,31 @@ function Update () {
 
 	// Die by being off screen
 	var screenPosition : Vector2 = Camera.main.WorldToScreenPoint(transform.position);
-	if (screenPosition.y > Screen.height || screenPosition.y < 0) {
+	
+	if (screenPosition.y > Screen.height) {
+		//transform.position.y = 8;
+		/*
+		
+		Camera.main.WorldToScreenPoint (transform.position);
+		
+		var wrld : Vector3 = Camera.main.ScreenToWorldPoint(new Vector3(Screen.height, 0.0f, 0.0f));
+		var half_sz : float = gameObject.renderer.bounds.size.y/2;
+		var max : float = (wrld.y - half_sz);
+		if (transform.position.y > 7) {
+			transform.position.y = 7;
+			Debug.Log("Moving");
+			Debug.Log(transform.position.y);
+			Debug.Log(half_sz);
+			Debug.Log(wrld.y);
+		}
+		*/
+		
+		
+
+		
+	}
+
+	if (screenPosition.y < 0 || screenPosition.y > Screen.height) {
 		Die();
 	}
 }

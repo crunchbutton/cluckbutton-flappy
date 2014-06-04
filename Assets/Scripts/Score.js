@@ -31,6 +31,5 @@ function UpdateScore() {
 }
 
 function getScore() {
-	
 	return score > scoreToSkip ? score - scoreToSkip : 0;
 }

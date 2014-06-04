@@ -1,11 +1,12 @@
 ﻿#pragma strict
 
-var rocks : GameObject;
+public var objects : GameObject[];
 
 function Start () {
 	InvokeRepeating("CreateObstacle", Score.obstacleSpeedOffset, Score.obstacleSpeed);
 }
 
 function CreateObstacle () {
-	Instantiate(rocks);
+	var item = objects[Mathf.Floor(Random.value * objects.length)];
+	Instantiate(item);
 }
