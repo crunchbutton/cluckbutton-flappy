@@ -1,6 +1,7 @@
 ﻿#pragma strict
 
-var customGuiStyle : GUIStyle;
+public var scoreStyle : GUIStyle;
+public var speedStyle : GUIStyle;
 
 private var score : int = 0;
 private var scoreToSkip : int = 2;
@@ -25,18 +26,15 @@ function OnDestroy () {
 }
 
 function OnGUI () {
-	GUILayout.Label("Score: " + getScore().ToString(), customGuiStyle);
+	GUILayout.Label("Score: " + getScore().ToString(), scoreStyle);
+	GUILayout.Label("Speed: " + speed.ToString(), speedStyle);
 }
 
 
 function UpdateScore() {
 	score++;
-	
-	var multiplier = Mathf.RoundToInt(score / 10);
-	speed = sourceSpeed * (multiplier / 10);
-	if (speed < sourceSpeed) {
-		speed = sourceSpeed;
-	}
+	// incriment at 10
+	speed = sourceSpeed + (getScore() / 10) * .01;
 }
 
 function getScore() {
