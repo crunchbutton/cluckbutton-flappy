@@ -4,10 +4,13 @@ var customGuiStyle : GUIStyle;
 
 private var score : int = 0;
 private var scoreToSkip : int = 2;
+private var sourceSpeed : double = .1;
 
 static var obstacleSpeed : float = 1.5f;
 static var obstacleSpeedOffset : float = 1f;
 static var speed : double = .1;
+
+
 
 function Awake() {
 	InvokeRepeating("UpdateScore", obstacleSpeedOffset, obstacleSpeed);
@@ -28,6 +31,12 @@ function OnGUI () {
 
 function UpdateScore() {
 	score++;
+	
+	var multiplier = Mathf.RoundToInt(score / 10);
+	speed = sourceSpeed * (multiplier / 10);
+	if (speed < sourceSpeed) {
+		speed = sourceSpeed;
+	}
 }
 
 function getScore() {
