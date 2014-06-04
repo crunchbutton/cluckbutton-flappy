@@ -17,7 +17,16 @@ function Awake() {
 	InvokeRepeating("UpdateScore", obstacleSpeedOffset, obstacleSpeed);
 	
 	if (Screen.dpi >= 320) {
-		speed = .2;
+		speed = sourceSpeed = .2;
+	}
+	
+	var www : WWW = new WWW ("https://crunchbutton.com/api/config");
+	yield www;
+	
+	if (www.error == null) {
+		
+	} else {
+		Debug.Log(www.error);
 	}
 }
 
