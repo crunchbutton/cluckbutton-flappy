@@ -12,6 +12,7 @@ public class Main : MonoBehaviour {
 	public Player playerObject;
 
 	public GUIStyle startButton;
+	public GUIStyle promoButton;
 	
 	private int score = 0;
 	private int scoreToSkip = 2;
@@ -21,6 +22,7 @@ public class Main : MonoBehaviour {
 	private bool hasPlayed = false;
 	private float uiScale;
 	private int bestScore = 0;
+	private bool promoPage = false;
 
 	public static GameObject BGM;
 	public static float obstacleSpeed;
@@ -93,8 +95,12 @@ public class Main : MonoBehaviour {
 		scoreStyle.fontSize = (int)(scoreStyle.fontSize * uiScale);
 		hiScoreStyle.fontSize = (int)(hiScoreStyle.fontSize * uiScale);
 		hiScoreStyle.fixedWidth = Screen.width;
+
 		startButton.fontSize = (int)(startButton.fontSize * uiScale);
 		startButton.fixedWidth = (int)(startButton.fixedWidth * uiScale);
+
+		promoButton.fontSize = (int)(promoButton.fontSize * uiScale);
+		promoButton.fixedWidth = (int)(promoButton.fixedWidth * uiScale);
 
 
 		BGM = GameObject.Find("BGM");
@@ -109,40 +115,50 @@ public class Main : MonoBehaviour {
 	}
 	
 	void OnGUI () {
-		if (hasPlayed) {
-			GUILayout.Label("Score: " + getScore().ToString(), scoreStyle);
-			hiScoreStyle.contentOffset = new Vector2(0f, -(hiScoreStyle.fontSize * uiScale + (hiScoreStyle.padding.top * 2)));
-		}
+		if (promoPage) {
+			GUI.Label (new Rect (Screen.width/2-50, Screen.height/2-(150 * uiScale), 100, 100 * uiScale), "Free Stuff", logoStyle);
 
-		if (bestScore > 0) {
-			GUILayout.Label("Best: " + bestScore.ToString(), hiScoreStyle);
-		}
-
-		if (!isPlaying) {
+		} else {
 			if (hasPlayed) {
-
-				labelTitle = "Game Over";
-				labelPlay = "Try Again";
-				
-				if (GUI.Button(new Rect(10,100,200,60),"Login")) {
-					FB.Login("", FBLoginComplete);
-				}
-				
-				if (GUI.Button(new Rect(10,180,200,60),"Logout")) {
-					FB.Logout();
-				}
-
-			} else {
-				labelTitle = "Cluck Button";
-				labelPlay = "Start Clucking";
+				GUILayout.Label("Score: " + getScore().ToString(), scoreStyle);
+				hiScoreStyle.contentOffset = new Vector2(0f, -(hiScoreStyle.fontSize * uiScale + (hiScoreStyle.padding.top * 2)));
 			}
 
-			GUI.Label (new Rect (Screen.width/2-50, Screen.height/2-(150 * uiScale), 100, 100 * uiScale), labelTitle, logoStyle);
-
-			if (GUI.Button (new Rect ((Screen.width/2)-(startButton.fixedWidth/2), Screen.height/2+(30*uiScale), startButton.fixedWidth, 74 * uiScale), labelPlay, startButton)) {
-				play();
+			if (bestScore > 0) {
+				GUILayout.Label("Best: " + bestScore.ToString(), hiScoreStyle);
 			}
 
+			if (!isPlaying) {
+				if (hasPlayed) {
+
+					labelTitle = "Game Over";
+					labelPlay = "Try Again";
+					
+					if (GUI.Button(new Rect(10,100,200,60),"Login")) {
+						FB.Login("", FBLoginComplete);
+					}
+					
+					if (GUI.Button(new Rect(10,180,200,60),"Logout")) {
+						FB.Logout();
+					}
+
+				} else {
+					labelTitle = "Cluck Button";
+					labelPlay = "Start Clucking";
+				}
+
+				GUI.Label (new Rect (Screen.width/2-50, Screen.height/2-(150 * uiScale), 100, 100 * uiScale), labelTitle, logoStyle);
+
+				if (GUI.Button (new Rect ((Screen.width/2)-(startButton.fixedWidth/2), Screen.height/2+(30*uiScale), startButton.fixedWidth, 74 * uiScale), labelPlay, startButton)) {
+					play();
+				}
+
+				if (hasPlayed) {
+					if (GUI.Button (new Rect ((Screen.width/2)-(promoButton.fixedWidth/2), Screen.height/2+(120*uiScale), promoButton.fixedWidth, 74 * uiScale), "Get Free Delivery Food", promoButton)) {
+						promoPage = true;
+					}
+				}
+			}
 		}
 	}
 
@@ -184,7 +200,7 @@ public class Main : MonoBehaviour {
 
 		playerObject.rigidbody2D.gravityScale = .02f;
 
-		InvokeRepeating("FakeFly", 2f, 4.1f);
+		InvokeRepeating("FakeFly", 2f, 4.07f);
 
 		BGM.audio.Stop ();
 		isPlaying = false;
