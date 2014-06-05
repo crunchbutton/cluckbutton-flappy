@@ -65,9 +65,9 @@
      <Compile Include="Assets\Scripts\CameraScroll.cs" />
      <Compile Include="Assets\Scripts\GameOverScore.cs" />
      <Compile Include="Assets\Scripts\Generate.cs" />
+     <Compile Include="Assets\Scripts\Main.cs" />
      <Compile Include="Assets\Scripts\Obstacle.cs" />
      <Compile Include="Assets\Scripts\Player.cs" />
-     <Compile Include="Assets\Scripts\Score.cs" />
      <Compile Include="Assets\Scripts\StartGame.cs" />
      <None Include="Assets\Plugins\Android\facebook\res\values\attrs.xml" />
      <None Include="Assets\Plugins\Android\facebook\res\layout\com_facebook_picker_activity_circle_row.xml" />

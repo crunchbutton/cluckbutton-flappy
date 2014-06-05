@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿
+/*
+using UnityEngine;
 using System.Collections;
 
 public class Generate : MonoBehaviour {
@@ -15,3 +17,4 @@ public class Generate : MonoBehaviour {
 		Instantiate(item);
 	}
 }
+*/

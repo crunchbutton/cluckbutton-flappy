@@ -5,6 +5,10 @@ public class GameOverScore : MonoBehaviour {
 	
 	private AsyncOperation status;
 
+	void Awake() {
+		StartCoroutine (reportScore ());
+	}
+
 	IEnumerator Start() {
 		status = Application.LoadLevelAsync("Flap");
 		status.allowSceneActivation = false;
@@ -51,7 +55,6 @@ public class GameOverScore : MonoBehaviour {
 		
 		if (GUI.Button(new Rect(10,20,100,60),"Init")) {
 			init ();
-			
 		}
 		
 		if (GUI.Button(new Rect(10,100,100,60),"Login")) {
@@ -80,6 +83,21 @@ public class GameOverScore : MonoBehaviour {
 	
 	void StartLevel() {
 		status.allowSceneActivation = true;
+	}
+
+	IEnumerator reportScore() {
+		var score = PlayerPrefs.GetInt("LastScore");
+
+		WWWForm form = new WWWForm();
+		form.AddField("fb", "123", System.Text.Encoding.UTF8);
+		form.AddField("score", score.ToString(), System.Text.Encoding.UTF8);
+		WWW www = new WWW("http://cluckbutton.localhost/api/score", form);
+		
+		yield return www;
+		
+		if (!string.IsNullOrEmpty(www.text)) {
+			Debug.Log(www.text);
+		}
 	}
 	
 }

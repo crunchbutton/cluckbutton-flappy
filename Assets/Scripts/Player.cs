@@ -4,16 +4,25 @@ using System.Collections;
 public class Player : MonoBehaviour {
 
 	public Vector2 jumpForce = Vector2.zero;
-	public AudioClip jump;
 	public AudioClip gameOverSound;
+	public AudioClip jump;
 
-	private bool isDying = false;
-	private GameObject BGM;
+	public bool isDying = false;
+
+	public Main mainObject;
+
+
+	void makePlayable() {
+
+	}
+
+	void makeUnPlayable() {
+
+	}
 	
 	void Awake() {
 		isDying = false;
-		BGM = GameObject.Find("BGM");
-		
+
 		if (Screen.dpi < 320) {
 			float scale = (float)(transform.localScale.x * .8);
 			transform.localScale = new Vector3(scale, scale, scale);
@@ -21,46 +30,34 @@ public class Player : MonoBehaviour {
 	}
 	
 	void Start() {
-		BGM.audio.Play();
-		//rigidbody2D.velocity = Vector3(Score.speed * 60,0,0);
+
+		//rigidbody2D.velocity = Vector3(Main.speed * 60,0,0);
 	}
 	
-	void FadeOutSound() {
-		BGM.audio.volume = 0;
-		/*
-    if (BGM) {
-        // wait 4 seconds then fades for 4.5s
-        for (var i = 9; i > 0; i--){
-          BGM.audio.volume = i * .1;
-          yield new WaitForSeconds (.1);
-        }
-        BGM.audio.volume = 0;
-    }
-    */
-	}
-	
-	void Jump() {
-		audio.PlayOneShot(jump, 1);
-		//rigidbody2D.velocity = Vector3(Score.speed * 60,0,0);
+	public void Jump() {
+		if (Main.isPlaying) {
+			audio.PlayOneShot(jump, 1);
+		}
+		//rigidbody2D.velocity = Vector3(Main.speed * 60,0,0);
 		rigidbody2D.velocity = Vector3.zero;
 		rigidbody2D.AddForce(jumpForce);
 	}
 	
 	void Update () {
-		if (isDying) {
+		if (isDying || !Main.isPlaying) {
 			return;
 		}
 		
 		// scroll
-		transform.position = new Vector3((float)(transform.position.x + Score.speed), transform.position.y, transform.position.z);
+		//transform.position = new Vector3((float)(transform.position.x + Main.speed), transform.position.y, transform.position.z);
 		/*
-	var nextPosition : Vector3 = new Vector3(transform.position.x + Score.speed, transform.position.y, transform.position.z);
+	var nextPosition : Vector3 = new Vector3(transform.position.x + Main.speed, transform.position.y, transform.position.z);
 	
 	
 //	transform.position = Vector3.Lerp(transform.position, nextPosition, Time.deltaTime * 100);
 	
 	var smooth : Vector3 = Vector3.zero;
-	var speed : float = Score.speed / 1000;
+	var speed : float = Main.speed / 1000;
 	transform.position = Vector3.SmoothDamp(transform.position, nextPosition, smooth, speed);
 	
 	*/
@@ -119,10 +116,11 @@ public class Player : MonoBehaviour {
 	IEnumerator Die() {
 		if (!isDying) {
 			isDying = true;
-			FadeOutSound();
+			Main.BGM.audio.Stop();
 			audio.PlayOneShot(gameOverSound);
 			yield return new WaitForSeconds(1.5f);
-			Application.LoadLevel("GameOver");
+			mainObject.reset();
+			//Application.LoadLevel("GameOver");
 		}
 	}
 	

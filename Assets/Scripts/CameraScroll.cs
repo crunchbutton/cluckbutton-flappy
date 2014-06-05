@@ -1,15 +1,16 @@
-﻿using UnityEngine;
+﻿/*
+using UnityEngine;
 using System.Collections;
 
 public class CameraScroll : MonoBehaviour {
 	void Update() {
-		double newSpeed = transform.position.x + Score.speed;
+		double newSpeed = transform.position.x + Main.speed;
 		transform.position = new Vector3((float)newSpeed, transform.position.y, transform.position.z);
 	}
 }
 
 
-
+*/
 
 
 
