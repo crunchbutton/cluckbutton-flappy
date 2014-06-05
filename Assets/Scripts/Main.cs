@@ -16,17 +16,22 @@ public class Main : MonoBehaviour {
 	
 	private int score = 0;
 	private int scoreToSkip = 2;
-	private double sourceSpeed = .08;
+	private double sourceSpeed = .16;
 	private float obstacleSourceSpeed = 2f;
-	private int incrimentAt = 10;
+	private int incrimentAt = 20;
 	private bool hasPlayed = false;
 	private float uiScale;
 	private int bestScore = 0;
 	private bool promoPage = false;
 
+	private double dpi;
+
 	public static GameObject BGM;
+
 	public static float obstacleSpeed;
 	public static float obstacleSpeedOffset = 1f;
+
+	public float lastObstacleSpeed = 0f;
 	public static double speed;
 
 	private string GUID;
@@ -68,23 +73,31 @@ public class Main : MonoBehaviour {
 		GUID = PlayerPrefs.GetString ("GUID");
 		bestScore = PlayerPrefs.GetInt ("BestScore");
 
+		dpi = Screen.dpi < 1 ? 100 : (double)Screen.dpi;
+
 		if (GUID == "") {
-			Debug.Log("new guid");
 			System.Guid newGUID = System.Guid.NewGuid();
 			GUID = newGUID.ToString();
 			PlayerPrefs.SetString("GUID", GUID);
 		}
 
-		if (Screen.dpi >= 320) {
-			speed = sourceSpeed = sourceSpeed * 2;
+		Debug.Log (dpi / 320);
+
+		speed = sourceSpeed = sourceSpeed * (dpi / 320);
+
+		if (speed < .08) {
+			speed = sourceSpeed = .08;
+		}
+
+		if (dpi >= 320) {
+			//speed = sourceSpeed = sourceSpeed * 2;
 			//obstacleSpeed = obstacleSourceSpeed = 1.8f;
 			obstacleSpeed = obstacleSourceSpeed;
 		} else {
-			speed = sourceSpeed;
 			obstacleSpeed = obstacleSourceSpeed;
 		}
 
-		if (Screen.dpi < 320) {
+		if (dpi < 320) {
 			//uiScale = 320 / Screen.dpi;
 			uiScale = .8f;
 		} else {
@@ -144,7 +157,7 @@ public class Main : MonoBehaviour {
 
 				} else {
 					labelTitle = "Cluck Button";
-					labelPlay = "Start Clucking";
+					labelPlay = Screen.width.ToString(); //"Start Clucking".
 				}
 
 				GUI.Label (new Rect (Screen.width/2-50, Screen.height/2-(150 * uiScale), 100, 100 * uiScale), labelTitle, logoStyle);
@@ -164,11 +177,30 @@ public class Main : MonoBehaviour {
 
 	void UpdateScore() {
 		score++;
+
+		// add obstacle
+		float i = Random.value * obstacles.Length;
+		GameObject item = obstacles[(int)Mathf.Floor(i)];
+		Instantiate(item);
+
 		// update the scroll speed
-		speed = sourceSpeed + (getScore() / incrimentAt) * .01;
+		if (speed < sourceSpeed * 2) {
+			speed = sourceSpeed + (getScore() / incrimentAt) * .01;
+		}
 
 		// update the obstacle speed
-		//obstacleSpeed = obstacleSourceSpeed + (getScore() / incrimentAt) * .01;
+		if (obstacleSpeed > 1) {
+			float newSpeed;
+
+			newSpeed = (float)(obstacleSourceSpeed - (getScore() / incrimentAt) * .1);
+
+			if (newSpeed < obstacleSpeed) {
+				obstacleSpeed = newSpeed;
+				CancelInvoke ("UpdateScore");
+				InvokeRepeating("UpdateScore", obstacleSpeed, obstacleSpeed);
+
+			}
+		}
 
 	}
 	
@@ -184,7 +216,6 @@ public class Main : MonoBehaviour {
 		hasPlayed = true;
 		isPlaying = true;
 		InvokeRepeating("UpdateScore", obstacleSpeedOffset, obstacleSpeed);
-		InvokeRepeating("CreateObstacle", obstacleSpeedOffset, obstacleSpeed);
 		CancelInvoke ("FakeFly");
 		BGM.audio.Play();
 
@@ -210,9 +241,9 @@ public class Main : MonoBehaviour {
 		PlayerPrefs.SetInt("LastScore", getScore());
 
 		CancelInvoke ("UpdateScore");
-		CancelInvoke ("CreateObstacle");
 		score = 0;
 		speed = sourceSpeed;
+		obstacleSpeed = obstacleSourceSpeed;
 		playerObject.isDying = false;
 		playerObject.rigidbody2D.velocity = Vector3.zero;
 		playerObject.rigidbody2D.angularVelocity = 0f;
@@ -228,11 +259,6 @@ public class Main : MonoBehaviour {
 
 	}
 
-	void CreateObstacle () {
-		float i = Random.value * obstacles.Length;
-		GameObject item = obstacles[(int)Mathf.Floor(i)];
-		Instantiate(item);
-	}
 
 	public static void stopBGM() {
 
