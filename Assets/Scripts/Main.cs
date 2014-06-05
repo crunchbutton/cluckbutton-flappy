@@ -4,6 +4,7 @@ using Facebook.MiniJSON;
 
 public class Main : MonoBehaviour {
 
+	public GUIStyle hiScoreStyle;
 	public GUIStyle scoreStyle;
 	public GUIStyle logoStyle;
 	public GameObject[] obstacles;
@@ -11,21 +12,20 @@ public class Main : MonoBehaviour {
 	public Player playerObject;
 
 	public GUIStyle startButton;
-
 	
 	private int score = 0;
 	private int scoreToSkip = 2;
-	private double sourceSpeed = .1;
-	private float obstacleSourceSpeed = 1.5f;
+	private double sourceSpeed = .08;
+	private float obstacleSourceSpeed = 2f;
 	private int incrimentAt = 10;
 	private bool hasPlayed = false;
 	private float uiScale;
 	private int bestScore = 0;
 
 	public static GameObject BGM;
-	public static float obstacleSpeed = 1.5f;
+	public static float obstacleSpeed;
 	public static float obstacleSpeedOffset = 1f;
-	public static double speed = .1;
+	public static double speed;
 
 	private string GUID;
 
@@ -49,8 +49,6 @@ public class Main : MonoBehaviour {
 				}
 			}
 */
-		} else {
-
 		}
 
 		// move the camera
@@ -76,11 +74,13 @@ public class Main : MonoBehaviour {
 		}
 
 		if (Screen.dpi >= 320) {
-			speed = sourceSpeed = .16;
-			obstacleSourceSpeed = obstacleSpeed = 1.8f;
+			speed = sourceSpeed = sourceSpeed * 2;
+			//obstacleSpeed = obstacleSourceSpeed = 1.8f;
+			obstacleSpeed = obstacleSourceSpeed;
+		} else {
+			speed = sourceSpeed;
+			obstacleSpeed = obstacleSourceSpeed;
 		}
-
-
 
 		if (Screen.dpi < 320) {
 			//uiScale = 320 / Screen.dpi;
@@ -91,6 +91,8 @@ public class Main : MonoBehaviour {
 
 		logoStyle.fontSize = (int)(logoStyle.fontSize * uiScale);
 		scoreStyle.fontSize = (int)(scoreStyle.fontSize * uiScale);
+		hiScoreStyle.fontSize = (int)(hiScoreStyle.fontSize * uiScale);
+		hiScoreStyle.fixedWidth = Screen.width;
 		startButton.fontSize = (int)(startButton.fontSize * uiScale);
 		startButton.fixedWidth = (int)(startButton.fixedWidth * uiScale);
 
@@ -109,6 +111,11 @@ public class Main : MonoBehaviour {
 	void OnGUI () {
 		if (hasPlayed) {
 			GUILayout.Label("Score: " + getScore().ToString(), scoreStyle);
+			hiScoreStyle.contentOffset = new Vector2(0f, -(hiScoreStyle.fontSize * uiScale + (hiScoreStyle.padding.top * 2)));
+		}
+
+		if (bestScore > 0) {
+			GUILayout.Label("Best: " + bestScore.ToString(), hiScoreStyle);
 		}
 
 		if (!isPlaying) {
