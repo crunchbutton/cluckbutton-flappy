@@ -9,6 +9,9 @@ public class Main : MonoBehaviour {
 	public GameObject[] obstacles;
 
 	public Player playerObject;
+
+	public GUIStyle startButton;
+
 	
 	private int score = 0;
 	private int scoreToSkip = 2;
@@ -21,7 +24,10 @@ public class Main : MonoBehaviour {
 	public static float obstacleSpeedOffset = 1f;
 	public static double speed = .1;
 
-	private Vector3 playerStart;
+	private string GUID;
+
+	private string labelTitle;
+	private string labelPlay;
 
 
 
@@ -47,8 +53,16 @@ public class Main : MonoBehaviour {
 	}
 	
 	void Awake() {
-		playerStart = playerObject.transform.position;
-		Debug.Log (playerStart.x);
+
+		GUID = PlayerPrefs.GetString ("GUID");
+
+		if (GUID == "") {
+			Debug.Log("new guid");
+			System.Guid newGUID = System.Guid.NewGuid();
+			GUID = newGUID.ToString();
+			PlayerPrefs.SetString("GUID", GUID);
+		}
+
 		if (Screen.dpi >= 320) {
 			speed = sourceSpeed = .2;
 		}
@@ -63,18 +77,41 @@ public class Main : MonoBehaviour {
 	}
 	
 	void OnGUI () {
-		GUILayout.Label("Score: " + getScore().ToString(), scoreStyle);
+		if (hasPlayed) {
+			GUILayout.Label("Score: " + getScore().ToString(), scoreStyle);
+		}
 
 		if (!isPlaying) {
 			if (hasPlayed) {
-				GUILayout.Label("Game Over" + speed.ToString(), logoStyle);
+
+				labelTitle = "Game Over";
+				labelPlay = "Try Again";
+
+				if (GUI.Button(new Rect(10,20,100,60),"Init")) {
+					//init ();
+				}
+				
+				if (GUI.Button(new Rect(10,100,100,60),"Login")) {
+					//login ();
+				}
+				
+				if (GUI.Button(new Rect(10,180,100,60),"Logout")) {
+					//logout ();
+				}
+
 			} else {
-				GUILayout.Label("Cluckbutton" + speed.ToString(), logoStyle);
+				labelTitle = "Cluckbutton";
+				labelPlay = "Start Clucking";
+
+
 			}
 
-			if (GUI.Button(new Rect(10,80,100,60),"start")) {
+			GUI.Label (new Rect (Screen.width/2-50, Screen.height/2-100, 100, 50), labelTitle, logoStyle);
+
+			if (GUI.Button (new Rect (Screen.width/2-125, Screen.height/2+20, 250, 50), labelPlay, startButton)) {
 				play ();
 			}
+
 		}
 	}
 
@@ -132,6 +169,8 @@ public class Main : MonoBehaviour {
 			Destroy (obstacle);
 		}
 
+		StartCoroutine (reportScore ());
+
 	}
 
 	void CreateObstacle () {
@@ -161,5 +200,44 @@ public class Main : MonoBehaviour {
 		playerObject.rigidbody2D.AddForce(jumpForce);
 		//Player.Jump ();
 	}
+
+	IEnumerator reportScore() {
+		WWWForm form = new WWWForm();
+		form.AddField("fb", "123", System.Text.Encoding.UTF8);
+		form.AddField("score", getScore().ToString(), System.Text.Encoding.UTF8);
+		WWW www = new WWW("http://cluckbutton.localhost/api/score", form);
+		
+		yield return www;
+		
+		if (!string.IsNullOrEmpty(www.text)) {
+			Debug.Log(www.text);
+		}
+	}
+	/*
+	public static string GetUniqueID(){
+		string key = "ID";
+		
+		var random = new System.Random();              
+		DateTime epochStart = new System.DateTime(1970, 1, 1, 8, 0, 0, System.DateTimeKind.Utc);
+		double timestamp = (System.DateTime.UtcNow - epochStart).TotalSeconds;
+		
+		string uniqueID = Application.systemLanguage                 //Language
+			+"-"+GetPlatform()                           //Device   
+				+"-"+String.Format("{0:X}", Convert.ToInt32(timestamp))          //Time
+				+"-"+String.Format("{0:X}", Convert.ToInt32(Time.time*1000000))     //Time in game
+				+"-"+String.Format("{0:X}", random.Next(1000000000));          //random number
+		
+		Debug.Log("Generated Unique ID: "+uniqueID);
+		
+		if(PlayerPrefs.HasKey(key)){
+			uniqueID = PlayerPrefs.GetString(key);      
+		} else {       
+			PlayerPrefs.SetString(key, uniqueID);
+			PlayerPrefs.Save();  
+		}
+		
+		return uniqueID;
+	}
+	*/
 
 }
