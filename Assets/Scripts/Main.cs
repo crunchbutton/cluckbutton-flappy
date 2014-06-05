@@ -48,7 +48,7 @@ public class Main : MonoBehaviour {
 	public static bool isPlaying = false;
 
 	private bool FBInitSuccess = false;
-	private string FBuid;
+	private string FBuid = "";
 
 	private bool isCBUser = false;
 
@@ -176,8 +176,14 @@ public class Main : MonoBehaviour {
 				if (!isCBUser) {
 					GUI.Label (new Rect (Screen.width/2-250, Screen.height/2-(80 * uiScale), 100, 100 * uiScale), "Please download the Crunchbutton app and log in with Facebook. A credit will be applied automagically.", promoDescriptionStyle);
 					if (GUI.Button (new Rect ((Screen.width/2)-(promoButton.fixedWidth/2), Screen.height/2+(100*uiScale), promoButton.fixedWidth, 74 * uiScale), "Download", promoButton)) {
-						//Application.OpenURL("http://crunchbutton.com/app");
-						Application.OpenURL("itms://itunes.apple.com/app/id721780390");
+
+						if (Application.platform == RuntimePlatform.IPhonePlayer) {
+							Application.OpenURL("itms://itunes.apple.com/app/id721780390");
+						} else {
+							Application.OpenURL("http://crunchbutton.com/app");
+						}
+
+
 					
 					}
 				} else {
@@ -428,9 +434,13 @@ public class Main : MonoBehaviour {
 
 	void FBInitComplete() {
 		FBInitSuccess = true;
+		if (!string.IsNullOrEmpty(FB.UserId)) {
+			StartCoroutine(checkUser());
+		}
 	}
 
 	void FBLoginComplete(FBResult result) {
+		Debug.Log ("User");
 		if (result.Error != null) {
 			Debug.Log(result.Error);
 		} else if (!FB.IsLoggedIn) {
@@ -443,7 +453,7 @@ public class Main : MonoBehaviour {
 	}
 
 	IEnumerator checkUser() {
-
+		Debug.Log ("checking user");
 		WWWForm form = new WWWForm();
 		form.AddField("fb", FB.UserId, System.Text.Encoding.UTF8);
 		WWW www = new WWW(api + "check-user", form);
