@@ -1,18 +1,23 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using Facebook.MiniJSON;
+
 
 public class Main : MonoBehaviour {
 
 	public GUIStyle hiScoreStyle;
 	public GUIStyle scoreStyle;
 	public GUIStyle logoStyle;
+	public GUIStyle promoTitleStyle;
+	public GUIStyle promoDescriptionStyle;
 	public GameObject[] obstacles;
 
 	public Player playerObject;
 
 	public GUIStyle startButton;
 	public GUIStyle promoButton;
+	public GUIStyle connectButton;
 	
 	private int score = 0;
 	private int scoreToSkip = 2;
@@ -41,10 +46,21 @@ public class Main : MonoBehaviour {
 
 	public static bool isPlaying = false;
 
+	private bool FBInitSuccess = false;
+	private string FBuid;
+
+	private bool isCBUser = false;
+
+	public string api = "http://xxcluckbutton.localhost/api/";
+
+
+	private Dictionary<string, object> promoData = new Dictionary<string, object>();
+
 
 	void Update() {
+		/*
 		if (!isPlaying && !hasPlayed) {
-			/*
+
 			if (Input.GetMouseButtonDown(0) || Input.GetKeyUp("space")) {
 				play();
 			} else if (Input.touchCount > 0) {
@@ -55,8 +71,9 @@ public class Main : MonoBehaviour {
 					}
 				}
 			}
-*/
+
 		}
+		*/
 
 		// move the camera
 		double newSpeed = Camera.main.transform.position.x + speed;
@@ -81,8 +98,6 @@ public class Main : MonoBehaviour {
 			PlayerPrefs.SetString("GUID", GUID);
 		}
 
-		Debug.Log (dpi / 320);
-
 		speed = sourceSpeed = sourceSpeed * (dpi / 320);
 
 		if (speed < .08) {
@@ -106,6 +121,9 @@ public class Main : MonoBehaviour {
 
 		logoStyle.fontSize = (int)(logoStyle.fontSize * uiScale);
 		scoreStyle.fontSize = (int)(scoreStyle.fontSize * uiScale);
+		promoTitleStyle.fontSize = (int)(promoTitleStyle.fontSize * uiScale);
+		promoDescriptionStyle.fontSize = (int)(promoDescriptionStyle.fontSize * uiScale);
+
 		hiScoreStyle.fontSize = (int)(hiScoreStyle.fontSize * uiScale);
 		hiScoreStyle.fixedWidth = Screen.width;
 
@@ -115,21 +133,44 @@ public class Main : MonoBehaviour {
 		promoButton.fontSize = (int)(promoButton.fontSize * uiScale);
 		promoButton.fixedWidth = (int)(promoButton.fixedWidth * uiScale);
 
+		connectButton.fontSize = (int)(connectButton.fontSize * uiScale);
+		connectButton.fixedWidth = (int)(connectButton.fixedWidth * uiScale);
+
 
 		BGM = GameObject.Find("BGM");
-		StartCoroutine (getConfig ());
+		try {
+			StartCoroutine (getConfig ());
+		} catch(System.Exception e) {
+			Debug.Log("big bad fail");
+		}
 		FB.Init(FBInitComplete);
 
 		reset (true);
 	}
 	
-	void OnDestroy () {
-		//reset ();
-	}
-	
 	void OnGUI () {
-		if (promoPage) {
-			GUI.Label (new Rect (Screen.width/2-50, Screen.height/2-(150 * uiScale), 100, 100 * uiScale), "Free Stuff", logoStyle);
+
+		if (promoPage && promoEnabled()) {
+
+			if (FBuid == "") {
+
+				GUI.Label (new Rect (Screen.width/2-50, Screen.height/2-(200 * uiScale), 100, 100 * uiScale), getPromoValue("title"), promoTitleStyle);
+				GUI.Label (new Rect (Screen.width/2-250, Screen.height/2-(50 * uiScale), 100, 100 * uiScale), getPromoValue("description"), promoDescriptionStyle);
+
+				if (GUI.Button (new Rect ((Screen.width/2)-(connectButton.fixedWidth/2), Screen.height/2+(100*uiScale), connectButton.fixedWidth, 74 * uiScale), "Connect", connectButton)) {
+					FB.Login("", FBLoginComplete);
+				}
+			} else {
+
+				if (!isCBUser) {
+					GUI.Label (new Rect (Screen.width/2-250, Screen.height/2-(50 * uiScale), 100, 100 * uiScale), "You will now need to download the Crunchbutton app and log in with facebook.", promoDescriptionStyle);
+					if (GUI.Button (new Rect ((Screen.width/2)-(promoButton.fixedWidth/2), Screen.height/2+(100*uiScale), promoButton.fixedWidth, 74 * uiScale), "Connect", promoButton)) {
+						Application.OpenURL("http://crunchbutton.com/app");
+					}
+				} else {
+					GUI.Label (new Rect (Screen.width/2-250, Screen.height/2-(50 * uiScale), 100, 100 * uiScale), getPromoValue("success"), promoDescriptionStyle);
+				}
+			}
 
 		} else {
 			if (hasPlayed) {
@@ -143,21 +184,11 @@ public class Main : MonoBehaviour {
 
 			if (!isPlaying) {
 				if (hasPlayed) {
-
 					labelTitle = "Game Over";
 					labelPlay = "Try Again";
-					
-					if (GUI.Button(new Rect(10,100,200,60),"Login")) {
-						FB.Login("", FBLoginComplete);
-					}
-					
-					if (GUI.Button(new Rect(10,180,200,60),"Logout")) {
-						FB.Logout();
-					}
-
 				} else {
 					labelTitle = "Cluck Button";
-					labelPlay = Screen.width.ToString(); //"Start Clucking".
+					labelPlay = "Start Clucking";
 				}
 
 				GUI.Label (new Rect (Screen.width/2-50, Screen.height/2-(150 * uiScale), 100, 100 * uiScale), labelTitle, logoStyle);
@@ -166,11 +197,12 @@ public class Main : MonoBehaviour {
 					play();
 				}
 
-				if (hasPlayed) {
-					if (GUI.Button (new Rect ((Screen.width/2)-(promoButton.fixedWidth/2), Screen.height/2+(120*uiScale), promoButton.fixedWidth, 74 * uiScale), "Get Free Delivery Food", promoButton)) {
+				if (hasPlayed && promoEnabled()) {
+					if (GUI.Button (new Rect ((Screen.width/2)-(promoButton.fixedWidth/2), Screen.height/2+(120*uiScale), promoButton.fixedWidth, 74 * uiScale), getPromoValue("button"), promoButton)) {
 						promoPage = true;
 					}
 				}
+
 			}
 		}
 	}
@@ -182,7 +214,7 @@ public class Main : MonoBehaviour {
 		float i = Random.value * obstacles.Length;
 		GameObject item = obstacles[(int)Mathf.Floor(i)];
 		Instantiate(item);
-
+		return;
 		// update the scroll speed
 		if (speed < sourceSpeed * 2) {
 			speed = sourceSpeed + (getScore() / incrimentAt) * .01;
@@ -210,6 +242,7 @@ public class Main : MonoBehaviour {
 
 	// call to play
 	void play() {
+
 		if (isPlaying) {
 			return;
 		}
@@ -255,7 +288,12 @@ public class Main : MonoBehaviour {
 			Destroy (obstacle);
 		}
 
-		StartCoroutine (reportScore ());
+		if (hasPlayed) {
+			try {
+				StartCoroutine (reportScore ());
+			} catch (System.Exception e) {
+			}
+		}
 
 	}
 
@@ -265,13 +303,47 @@ public class Main : MonoBehaviour {
 	}
 
 	private IEnumerator getConfig() {
-		WWW www = new WWW("http://cluckbutton.localhost/api/config");
+		Debug.Log ("Getting config...");
+
+		string promo = PlayerPrefs.GetString("Promo");
+
+		if (promo == "") {
+			// use the default promo
+			//promo = '{"id":1,"exp":"2015-01-01","value":"$2","button":"Get Free Delivery Food","title":"Free delivery from Crunchbutton","description":"Connect your facebook account to Cluckbutton and Crunchbutton and get your next delivery fee is on us","img":null}';
+		}
+
+		if (promo != "") {
+			promoData = Json.Deserialize(promo) as Dictionary<string, object>;
+		}
+
+		WWW www = new WWW(api + "/config");
 		yield return www;
 		
 		if (!string.IsNullOrEmpty (www.text)) {
-			Debug.Log(www.text);
-			Debug.Log(Json.Deserialize(www.text));
+			promo = www.text;
+			promoData = Json.Deserialize(promo) as Dictionary<string, object>;
 		}
+		
+		if (promoData["exp"].ToString() != "") {
+			System.DateTime promoDate;
+			System.DateTime currentTime = System.DateTime.Now;
+			bool validDate = System.DateTime.TryParse(promoData["exp"].ToString(), out promoDate);
+
+			int result = 0;
+			
+			if (validDate) {
+				result = System.DateTime.Compare(currentTime, promoDate);
+			}
+
+			if (result > 0 || !validDate) {
+				promoData = new Dictionary<string, object>();
+				promo = "";
+			}
+		}
+
+		//if (!string.IsNullOrEmpty (promoData)) {
+			PlayerPrefs.SetString("Promo", promo);
+		//}
 	}
 
 	private void FakeFly() {
@@ -283,10 +355,18 @@ public class Main : MonoBehaviour {
 	}
 
 	IEnumerator reportScore() {
+
+		Debug.Log ("Reporting Score: " + score.ToString ());
+
 		WWWForm form = new WWWForm();
-		form.AddField("fb", "123", System.Text.Encoding.UTF8);
+		form.AddField("fb", FB.UserId, System.Text.Encoding.UTF8);
 		form.AddField("score", getScore().ToString(), System.Text.Encoding.UTF8);
-		WWW www = new WWW("http://cluckbutton.localhost/api/score", form);
+		form.AddField("guid", GUID, System.Text.Encoding.UTF8);
+		form.AddField("screen-height", Screen.height.ToString(), System.Text.Encoding.UTF8);
+		form.AddField("screen-width", Screen.width.ToString(), System.Text.Encoding.UTF8);
+		form.AddField("screen-dpi", Screen.dpi.ToString(), System.Text.Encoding.UTF8);
+		form.AddField("device", SystemInfo.deviceModel, System.Text.Encoding.UTF8);
+		WWW www = new WWW(api + "score", form);
 		
 		yield return www;
 		
@@ -322,7 +402,7 @@ public class Main : MonoBehaviour {
 	*/
 
 	void FBInitComplete() {
-
+		FBInitSuccess = true;
 	}
 
 	void FBLoginComplete(FBResult result) {
@@ -331,8 +411,51 @@ public class Main : MonoBehaviour {
 		} else if (!FB.IsLoggedIn) {
 			Debug.Log("canceled");
 		} else {
-			Debug.Log("success");
+			Debug.Log(result);
+
+			StartCoroutine(checkUser());
 		}
+	}
+
+	IEnumerator checkUser() {
+
+		WWWForm form = new WWWForm();
+		form.AddField("fb", FB.UserId, System.Text.Encoding.UTF8);
+		WWW www = new WWW(api + "check-user", form);
+		
+		yield return www;
+		
+		if (!string.IsNullOrEmpty(www.text)) {
+			Dictionary<string, object> userCheck = Json.Deserialize(www.text) as Dictionary<string, object>;
+			if (userCheck["status"].ToString() == "true") {
+				isCBUser = true;
+			} else {
+				isCBUser = false;
+			}
+			FBuid = FB.UserId;
+		}
+	}
+
+	bool promoEnabled() {
+		if (FBInitSuccess && getPromoValue("id") != "") {
+			return true;
+		}
+		return false;
+	}
+
+	string getPromoValue(string key) {
+
+		try {
+			if (promoData.ContainsKey(key)) {
+				return promoData[key].ToString();
+			}
+		
+		} catch (UnityException e) {
+
+		} catch (System.Exception e) {
+
+		}
+		return "";
 	}
 
 
