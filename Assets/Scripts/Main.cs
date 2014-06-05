@@ -16,8 +16,11 @@ public class Main : MonoBehaviour {
 	private int score = 0;
 	private int scoreToSkip = 2;
 	private double sourceSpeed = .1;
+	private float obstacleSourceSpeed = 1.5f;
 	private int incrimentAt = 10;
 	private bool hasPlayed = false;
+	private float uiScale;
+	private int bestScore = 0;
 
 	public static GameObject BGM;
 	public static float obstacleSpeed = 1.5f;
@@ -29,15 +32,23 @@ public class Main : MonoBehaviour {
 	private string labelTitle;
 	private string labelPlay;
 
-
-
-
 	public static bool isPlaying = false;
 
-	void Update() {
-		if (!isPlaying) {
 
-			//return;
+	void Update() {
+		if (!isPlaying && !hasPlayed) {
+			/*
+			if (Input.GetMouseButtonDown(0) || Input.GetKeyUp("space")) {
+				play();
+			} else if (Input.touchCount > 0) {
+				for (int i = 0; i < Input.touchCount; i++) {
+					if (Input.touches[i].phase == TouchPhase.Began) {
+						play();
+						break;
+					}
+				}
+			}
+*/
 		} else {
 
 		}
@@ -55,6 +66,7 @@ public class Main : MonoBehaviour {
 	void Awake() {
 
 		GUID = PlayerPrefs.GetString ("GUID");
+		bestScore = PlayerPrefs.GetInt ("BestScore");
 
 		if (GUID == "") {
 			Debug.Log("new guid");
@@ -64,10 +76,28 @@ public class Main : MonoBehaviour {
 		}
 
 		if (Screen.dpi >= 320) {
-			speed = sourceSpeed = .2;
+			speed = sourceSpeed = .16;
+			obstacleSourceSpeed = obstacleSpeed = 1.8f;
 		}
+
+
+
+		if (Screen.dpi < 320) {
+			//uiScale = 320 / Screen.dpi;
+			uiScale = .8f;
+		} else {
+			uiScale = 1f;
+		}
+
+		logoStyle.fontSize = (int)(logoStyle.fontSize * uiScale);
+		scoreStyle.fontSize = (int)(scoreStyle.fontSize * uiScale);
+		startButton.fontSize = (int)(startButton.fontSize * uiScale);
+		startButton.fixedWidth = (int)(startButton.fixedWidth * uiScale);
+
+
 		BGM = GameObject.Find("BGM");
 		StartCoroutine (getConfig ());
+		FB.Init(FBInitComplete);
 
 		reset (true);
 	}
@@ -86,30 +116,24 @@ public class Main : MonoBehaviour {
 
 				labelTitle = "Game Over";
 				labelPlay = "Try Again";
-
-				if (GUI.Button(new Rect(10,20,100,60),"Init")) {
-					//init ();
+				
+				if (GUI.Button(new Rect(10,100,200,60),"Login")) {
+					FB.Login("", FBLoginComplete);
 				}
 				
-				if (GUI.Button(new Rect(10,100,100,60),"Login")) {
-					//login ();
-				}
-				
-				if (GUI.Button(new Rect(10,180,100,60),"Logout")) {
-					//logout ();
+				if (GUI.Button(new Rect(10,180,200,60),"Logout")) {
+					FB.Logout();
 				}
 
 			} else {
-				labelTitle = "Cluckbutton";
+				labelTitle = "Cluck Button";
 				labelPlay = "Start Clucking";
-
-
 			}
 
-			GUI.Label (new Rect (Screen.width/2-50, Screen.height/2-100, 100, 50), labelTitle, logoStyle);
+			GUI.Label (new Rect (Screen.width/2-50, Screen.height/2-(150 * uiScale), 100, 100 * uiScale), labelTitle, logoStyle);
 
-			if (GUI.Button (new Rect (Screen.width/2-125, Screen.height/2+20, 250, 50), labelPlay, startButton)) {
-				play ();
+			if (GUI.Button (new Rect ((Screen.width/2)-(startButton.fixedWidth/2), Screen.height/2+(30*uiScale), startButton.fixedWidth, 74 * uiScale), labelPlay, startButton)) {
+				play();
 			}
 
 		}
@@ -117,7 +141,12 @@ public class Main : MonoBehaviour {
 
 	void UpdateScore() {
 		score++;
+		// update the scroll speed
 		speed = sourceSpeed + (getScore() / incrimentAt) * .01;
+
+		// update the obstacle speed
+		//obstacleSpeed = obstacleSourceSpeed + (getScore() / incrimentAt) * .01;
+
 	}
 	
 	int getScore() {
@@ -152,6 +181,9 @@ public class Main : MonoBehaviour {
 
 		BGM.audio.Stop ();
 		isPlaying = false;
+		if (getScore () > bestScore) {
+			PlayerPrefs.SetInt("BestScore", getScore());
+		}
 		PlayerPrefs.SetInt("LastScore", getScore());
 
 		CancelInvoke ("UpdateScore");
@@ -239,5 +271,20 @@ public class Main : MonoBehaviour {
 		return uniqueID;
 	}
 	*/
+
+	void FBInitComplete() {
+
+	}
+
+	void FBLoginComplete(FBResult result) {
+		if (result.Error != null) {
+			Debug.Log(result.Error);
+		} else if (!FB.IsLoggedIn) {
+			Debug.Log("canceled");
+		} else {
+			Debug.Log("success");
+		}
+	}
+
 
 }
