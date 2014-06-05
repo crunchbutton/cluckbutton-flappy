@@ -18,6 +18,7 @@ public class Main : MonoBehaviour {
 	public GUIStyle startButton;
 	public GUIStyle promoButton;
 	public GUIStyle connectButton;
+	public GUIStyle promoBackButton;
 	
 	private int score = 0;
 	private int scoreToSkip = 2;
@@ -51,7 +52,8 @@ public class Main : MonoBehaviour {
 
 	private bool isCBUser = false;
 
-	public string api = "http://xxcluckbutton.localhost/api/";
+	public string api;
+
 
 
 	private Dictionary<string, object> promoData = new Dictionary<string, object>();
@@ -86,6 +88,8 @@ public class Main : MonoBehaviour {
 	}
 	
 	void Awake() {
+
+		api = "http://cluckbutton.com/api/";
 
 		GUID = PlayerPrefs.GetString ("GUID");
 		bestScore = PlayerPrefs.GetInt ("BestScore");
@@ -136,6 +140,11 @@ public class Main : MonoBehaviour {
 		connectButton.fontSize = (int)(connectButton.fontSize * uiScale);
 		connectButton.fixedWidth = (int)(connectButton.fixedWidth * uiScale);
 
+		promoBackButton.fontSize = (int)(promoBackButton.fontSize * uiScale);
+		promoBackButton.fixedWidth = (int)(promoBackButton.fixedWidth * uiScale);
+
+
+
 
 		BGM = GameObject.Find("BGM");
 		try {
@@ -150,6 +159,8 @@ public class Main : MonoBehaviour {
 	
 	void OnGUI () {
 
+
+
 		if (promoPage && promoEnabled()) {
 
 			if (FBuid == "") {
@@ -163,15 +174,26 @@ public class Main : MonoBehaviour {
 			} else {
 
 				if (!isCBUser) {
-					GUI.Label (new Rect (Screen.width/2-250, Screen.height/2-(50 * uiScale), 100, 100 * uiScale), "You will now need to download the Crunchbutton app and log in with facebook.", promoDescriptionStyle);
-					if (GUI.Button (new Rect ((Screen.width/2)-(promoButton.fixedWidth/2), Screen.height/2+(100*uiScale), promoButton.fixedWidth, 74 * uiScale), "Connect", promoButton)) {
-						Application.OpenURL("http://crunchbutton.com/app");
+					GUI.Label (new Rect (Screen.width/2-250, Screen.height/2-(80 * uiScale), 100, 100 * uiScale), "Please download the Crunchbutton app and log in with Facebook. A credit will be applied automagically.", promoDescriptionStyle);
+					if (GUI.Button (new Rect ((Screen.width/2)-(promoButton.fixedWidth/2), Screen.height/2+(100*uiScale), promoButton.fixedWidth, 74 * uiScale), "Download", promoButton)) {
+						//Application.OpenURL("http://crunchbutton.com/app");
+						Application.OpenURL("itms://itunes.apple.com/app/id721780390");
+					
 					}
 				} else {
 					GUI.Label (new Rect (Screen.width/2-250, Screen.height/2-(50 * uiScale), 100, 100 * uiScale), getPromoValue("success"), promoDescriptionStyle);
 				}
 			}
 
+			//if (GUI.Button (new Rect (15, Screen.height-(85 * uiScale), 40, 70 * uiScale), "back", promoBackButton)) {
+			//	promoPage = false;
+			//}
+
+			if (GUI.Button (new Rect (15, Screen.height-(85*uiScale), 150, 70 * uiScale), "back", promoBackButton)) {
+				promoPage = false;
+			}
+			
+			
 		} else {
 			if (hasPlayed) {
 				GUILayout.Label("Score: " + getScore().ToString(), scoreStyle);
@@ -214,7 +236,7 @@ public class Main : MonoBehaviour {
 		float i = Random.value * obstacles.Length;
 		GameObject item = obstacles[(int)Mathf.Floor(i)];
 		Instantiate(item);
-		return;
+
 		// update the scroll speed
 		if (speed < sourceSpeed * 2) {
 			speed = sourceSpeed + (getScore() / incrimentAt) * .01;
@@ -242,16 +264,17 @@ public class Main : MonoBehaviour {
 
 	// call to play
 	void play() {
-
 		if (isPlaying) {
 			return;
 		}
+		Debug.Log ("Starting scene...");
 		hasPlayed = true;
 		isPlaying = true;
 		InvokeRepeating("UpdateScore", obstacleSpeedOffset, obstacleSpeed);
 		CancelInvoke ("FakeFly");
 		BGM.audio.Play();
-
+		score = 0;
+		
 		playerObject.rigidbody2D.gravityScale = 1;
 
 	}
@@ -261,7 +284,7 @@ public class Main : MonoBehaviour {
 		if (!isPlaying && !force) {
 			return;
 		}
-
+		Debug.Log ("Resetting scene...");
 		playerObject.rigidbody2D.gravityScale = .02f;
 
 		InvokeRepeating("FakeFly", 2f, 4.07f);
@@ -274,7 +297,6 @@ public class Main : MonoBehaviour {
 		PlayerPrefs.SetInt("LastScore", getScore());
 
 		CancelInvoke ("UpdateScore");
-		score = 0;
 		speed = sourceSpeed;
 		obstacleSpeed = obstacleSourceSpeed;
 		playerObject.isDying = false;
@@ -288,11 +310,13 @@ public class Main : MonoBehaviour {
 			Destroy (obstacle);
 		}
 
-		if (hasPlayed) {
-			try {
-				StartCoroutine (reportScore ());
-			} catch (System.Exception e) {
-			}
+		if (!force) {
+
+			//try {
+
+				StartCoroutine (reportScore());
+			//} catch (System.Exception e) {
+			//}
 		}
 
 	}
@@ -357,6 +381,7 @@ public class Main : MonoBehaviour {
 	IEnumerator reportScore() {
 
 		Debug.Log ("Reporting Score: " + score.ToString ());
+		Debug.Log (getScore ());
 
 		WWWForm form = new WWWForm();
 		form.AddField("fb", FB.UserId, System.Text.Encoding.UTF8);

@@ -106,14 +106,17 @@ public class Player : MonoBehaviour {
 	}
 	
 	IEnumerator Die() {
-		if (!isDying) {
+		//if (!isDying) {
 			isDying = true;
 			Main.BGM.audio.Stop();
 			audio.PlayOneShot(gameOverSound);
+		Debug.Log("RESET 1");
 			yield return new WaitForSeconds(1.5f);
+			Debug.Log("RESET 2");
 			mainObject.reset();
+//			return;
 			//Application.LoadLevel("GameOver");
-		}
+		//}
 	}
 	
 	
