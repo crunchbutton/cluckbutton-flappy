@@ -52,7 +52,7 @@ public class Main : MonoBehaviour {
 
 	private bool isCBUser = false;
 
-	public string api;
+	private string api = "http://cluckbutton.com/api/";
 
 
 
@@ -80,16 +80,16 @@ public class Main : MonoBehaviour {
 		// move the camera
 		double newSpeed = Camera.main.transform.position.x + speed;
 		Camera.main.transform.position = new Vector3((float)newSpeed, Camera.main.transform.position.y, Camera.main.transform.position.z);
+		//Camera.main.transform.position = Vector3.Lerp(Camera.main.transform.position, new Vector3((float)newSpeed, Camera.main.transform.position.y, Camera.main.transform.position.z), 5f * Time.deltaTime);
 
 		// move the player
 		if (!playerObject.isDying) {
 			playerObject.transform.position = new Vector3((float)(playerObject.transform.position.x + speed), playerObject.transform.position.y, playerObject.transform.position.z);
+			//playerObject.transform.position = Vector3.Lerp(playerObject.transform.position, new Vector3((float)(playerObject.transform.position.x + speed), playerObject.transform.position.y, playerObject.transform.position.z), 5f * Time.deltaTime);
 		}
 	}
 	
 	void Awake() {
-
-		api = "http://cluckbutton.com/api/";
 
 		GUID = PlayerPrefs.GetString ("GUID");
 		bestScore = PlayerPrefs.GetInt ("BestScore");
@@ -102,11 +102,18 @@ public class Main : MonoBehaviour {
 			PlayerPrefs.SetString("GUID", GUID);
 		}
 
-		speed = sourceSpeed = sourceSpeed * (dpi / 320);
-
-		if (speed < .08) {
-			speed = sourceSpeed = .08;
+		if (Application.platform == RuntimePlatform.Android) {
+			sourceSpeed = speed = .19;
 		}
+
+			speed = sourceSpeed = sourceSpeed * (dpi / 320);
+			
+			if (speed < .08) {
+				speed = sourceSpeed = .08;
+			}
+
+
+
 
 		if (dpi >= 320) {
 			//speed = sourceSpeed = sourceSpeed * 2;
@@ -116,7 +123,7 @@ public class Main : MonoBehaviour {
 			obstacleSpeed = obstacleSourceSpeed;
 		}
 
-		if (dpi < 320) {
+		if (dpi < 101) {
 			//uiScale = 320 / Screen.dpi;
 			uiScale = .8f;
 		} else {
@@ -297,8 +304,9 @@ public class Main : MonoBehaviour {
 
 		BGM.audio.Stop ();
 		isPlaying = false;
-		if (getScore () > bestScore) {
+		if (getScore() > bestScore) {
 			PlayerPrefs.SetInt("BestScore", getScore());
+			bestScore = getScore();
 		}
 		PlayerPrefs.SetInt("LastScore", getScore());
 
@@ -456,13 +464,19 @@ public class Main : MonoBehaviour {
 		Debug.Log ("checking user");
 		WWWForm form = new WWWForm();
 		form.AddField("fb", FB.UserId, System.Text.Encoding.UTF8);
+		form.AddField("guid", GUID, System.Text.Encoding.UTF8);
+		form.AddField("screen-height", Screen.height.ToString(), System.Text.Encoding.UTF8);
+		form.AddField("screen-width", Screen.width.ToString(), System.Text.Encoding.UTF8);
+		form.AddField("screen-dpi", Screen.dpi.ToString(), System.Text.Encoding.UTF8);
+		form.AddField("device", SystemInfo.deviceModel, System.Text.Encoding.UTF8);
 		WWW www = new WWW(api + "check-user", form);
 		
 		yield return www;
 		
 		if (!string.IsNullOrEmpty(www.text)) {
 			Dictionary<string, object> userCheck = Json.Deserialize(www.text) as Dictionary<string, object>;
-			if (userCheck["status"].ToString() == "true") {
+			Debug.Log(userCheck["status"].ToString());
+			if (userCheck["status"].ToString() == "True") {
 				isCBUser = true;
 			} else {
 				isCBUser = false;
