@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Facebook.MiniJSON;
+using Facebook.Unity;
 
 
 public class Main : MonoBehaviour {
@@ -161,6 +162,8 @@ public class Main : MonoBehaviour {
 		}
 		FB.Init(FBInitComplete);
 
+
+
 		reset (true);
 	}
 	
@@ -176,7 +179,9 @@ public class Main : MonoBehaviour {
 				GUI.Label (new Rect (Screen.width/2-250, Screen.height/2-(50 * uiScale), 100, 100 * uiScale), getPromoValue("description"), promoDescriptionStyle);
 
 				if (GUI.Button (new Rect ((Screen.width/2)-(connectButton.fixedWidth/2), Screen.height/2+(100*uiScale), connectButton.fixedWidth, 74 * uiScale), "Connect", connectButton)) {
-					FB.Login("", FBLoginComplete);
+
+					//var perms = new List<string>(){"public_profile", "email", "user_friends"};
+					FB.LogInWithReadPermissions(new List<string>(){"public_profile"}, FBLoginComplete);
 				}
 			} else {
 
@@ -285,10 +290,10 @@ public class Main : MonoBehaviour {
 		isPlaying = true;
 		InvokeRepeating("UpdateScore", obstacleSpeedOffset, obstacleSpeed);
 		CancelInvoke ("FakeFly");
-		BGM.audio.Play();
+		BGM.GetComponent<AudioSource>().Play();
 		score = 0;
 		
-		playerObject.rigidbody2D.gravityScale = 1;
+		playerObject.GetComponent<Rigidbody2D>().gravityScale = 1;
 
 	}
 
@@ -298,11 +303,11 @@ public class Main : MonoBehaviour {
 			return;
 		}
 		Debug.Log ("Resetting scene...");
-		playerObject.rigidbody2D.gravityScale = .02f;
+		playerObject.GetComponent<Rigidbody2D>().gravityScale = .02f;
 
 		InvokeRepeating("FakeFly", 2f, 4.07f);
 
-		BGM.audio.Stop ();
+		BGM.GetComponent<AudioSource>().Stop ();
 		isPlaying = false;
 		if (getScore() > bestScore) {
 			PlayerPrefs.SetInt("BestScore", getScore());
@@ -314,8 +319,8 @@ public class Main : MonoBehaviour {
 		speed = sourceSpeed;
 		obstacleSpeed = obstacleSourceSpeed;
 		playerObject.isDying = false;
-		playerObject.rigidbody2D.velocity = Vector3.zero;
-		playerObject.rigidbody2D.angularVelocity = 0f;
+		playerObject.GetComponent<Rigidbody2D>().velocity = Vector3.zero;
+		playerObject.GetComponent<Rigidbody2D>().angularVelocity = 0f;
 
 		playerObject.transform.position = new Vector3(Camera.main.transform.position.x-7f,5.4f,playerObject.transform.position.z);
 		playerObject.transform.rotation = new Quaternion (0f,0f,0f,0f);
@@ -387,8 +392,8 @@ public class Main : MonoBehaviour {
 	private void FakeFly() {
 		//playerObject.GetComponent ("Script").Jump ();
 		var jumpForce = new Vector2 (0,20);
-		playerObject.rigidbody2D.velocity = Vector3.zero;
-		playerObject.rigidbody2D.AddForce(jumpForce);
+		playerObject.GetComponent<Rigidbody2D>().velocity = Vector3.zero;
+		playerObject.GetComponent<Rigidbody2D>().AddForce(jumpForce);
 		//Player.Jump ();
 	}
 
@@ -398,7 +403,7 @@ public class Main : MonoBehaviour {
 		Debug.Log (getScore ());
 
 		WWWForm form = new WWWForm();
-		form.AddField("fb", FB.UserId, System.Text.Encoding.UTF8);
+		form.AddField("fb", AccessToken.CurrentAccessToken.UserId, System.Text.Encoding.UTF8);
 		form.AddField("score", getScore().ToString(), System.Text.Encoding.UTF8);
 		form.AddField("guid", GUID, System.Text.Encoding.UTF8);
 		form.AddField("screen-height", Screen.height.ToString(), System.Text.Encoding.UTF8);
@@ -442,12 +447,12 @@ public class Main : MonoBehaviour {
 
 	void FBInitComplete() {
 		FBInitSuccess = true;
-		if (!string.IsNullOrEmpty(FB.UserId)) {
+		if (!string.IsNullOrEmpty(AccessToken.CurrentAccessToken.UserId)) {
 			StartCoroutine(checkUser());
 		}
 	}
 
-	void FBLoginComplete(FBResult result) {
+	void FBLoginComplete(ILoginResult result) {
 		Debug.Log ("User");
 		if (result.Error != null) {
 			Debug.Log(result.Error);
@@ -463,7 +468,7 @@ public class Main : MonoBehaviour {
 	IEnumerator checkUser() {
 		Debug.Log ("checking user");
 		WWWForm form = new WWWForm();
-		form.AddField("fb", FB.UserId, System.Text.Encoding.UTF8);
+		form.AddField("fb", AccessToken.CurrentAccessToken.UserId, System.Text.Encoding.UTF8);
 		form.AddField("guid", GUID, System.Text.Encoding.UTF8);
 		form.AddField("screen-height", Screen.height.ToString(), System.Text.Encoding.UTF8);
 		form.AddField("screen-width", Screen.width.ToString(), System.Text.Encoding.UTF8);
@@ -481,7 +486,7 @@ public class Main : MonoBehaviour {
 			} else {
 				isCBUser = false;
 			}
-			FBuid = FB.UserId;
+			FBuid = AccessToken.CurrentAccessToken.UserId;
 		}
 	}
 

@@ -147,9 +147,9 @@ public class EZParallaxObjectElement
 		float? minBoundX = null;
 		float? minBoundY = null;
 		
-		if(targetTransform.renderer != null)
+		if(targetTransform.GetComponent<Renderer>() != null)
 		{
-			Bounds myMeshBounds = targetTransform.renderer.bounds;
+			Bounds myMeshBounds = targetTransform.GetComponent<Renderer>().bounds;
 			maxBoundX = (float?)myMeshBounds.max.x;
 			maxBoundY = (float?)myMeshBounds.max.y;
 			minBoundX = (float?)myMeshBounds.min.x;
@@ -312,7 +312,7 @@ public class EZParallax : MonoBehaviour
 		EstablishMaxDistance();
 		m_camStartVect = m_mainCamera.transform.position;
 		m_previousCameraPosition = m_camStartVect;
-		m_camStartOrthoSize = m_mainCamera.camera.orthographicSize;
+		m_camStartOrthoSize = m_mainCamera.GetComponent<Camera>().orthographicSize;
 		m_currentOrthoSize = m_camStartOrthoSize;
 		m_prevOrthoSize = m_camStartOrthoSize;
 		SetElementScreenSpaceExtents(m_parallaxElements);
@@ -326,7 +326,7 @@ public class EZParallax : MonoBehaviour
 	
 	void SpawnDupes()
 	{
-		Camera actualCamera = m_mainCamera.camera;
+		Camera actualCamera = m_mainCamera.GetComponent<Camera>();
 		float screenWidth = actualCamera.pixelWidth;
 		List<EZParallaxObjectElement> elementsToDupe = new List<EZParallaxObjectElement>();
 		
@@ -507,7 +507,7 @@ public class EZParallax : MonoBehaviour
 			{
 				objectOffsetVector = new Vector3(randomOffsetsList[k] + dupeTargetElement.meshWidth, 0, 0);
 				dupeTargetElement.initialRightSpawnDistanceX = randomOffsetsList[k];
-				dupeTargetElement.initialRightSpawnDistanceScreenSpaceX = targetCenterPosScreenPt.x - actualCamera.camera.WorldToScreenPoint(dupeTargetElement.parallaxObject.position - (new Vector3(randomOffsetsList[k], 0, dupeTargetElement.parallaxObject.position.z))).x;
+				dupeTargetElement.initialRightSpawnDistanceScreenSpaceX = targetCenterPosScreenPt.x - actualCamera.GetComponent<Camera>().WorldToScreenPoint(dupeTargetElement.parallaxObject.position - (new Vector3(randomOffsetsList[k], 0, dupeTargetElement.parallaxObject.position.z))).x;
 			}
 			else
 			{
@@ -592,7 +592,7 @@ public class EZParallax : MonoBehaviour
 	
 	private void SetElementScreenSpaceExtents(EZParallaxObjectElement targetElement)
 	{
-		Camera actualCamera = m_mainCamera.camera;
+		Camera actualCamera = m_mainCamera.GetComponent<Camera>();
 		if(targetElement.needsNewScreenspaceExtents == true)
 		{
 			Vector2 elementCenterScreenPt = actualCamera.WorldToScreenPoint(targetElement.parallaxObject.position);
@@ -645,12 +645,12 @@ public class EZParallax : MonoBehaviour
 		
 		m_currentCameraPosition = m_mainCamera.transform.position;
 		Vector3 camFrameDelta = m_currentCameraPosition - m_previousCameraPosition;
-		m_currentOrthoSize = m_mainCamera.camera.orthographicSize;
+		m_currentOrthoSize = m_mainCamera.GetComponent<Camera>().orthographicSize;
 		if(m_initialized && camFrameDelta !=  Vector3.zero )
 		{
 			for(int i = 0; i < m_parallaxElements.Length; i++)
 			{
-				bool direction = m_mainCamera.camera.velocity.x >= 0;
+				bool direction = m_mainCamera.GetComponent<Camera>().velocity.x >= 0;
 				EZParallaxObjectElement targetPE = m_parallaxElements[i];
 				if(targetPE.parallaxObject == null)
 				{
@@ -664,7 +664,7 @@ public class EZParallax : MonoBehaviour
 				{
 					if(targetPE.isMotorized)
 					{
-						float camVelocityX = m_mainCamera.camera.velocity.x;
+						float camVelocityX = m_mainCamera.GetComponent<Camera>().velocity.x;
 						float movementWithScalar = camVelocityX - (camVelocityX * movementScalar);
 						direction = (targetPE.motorSpeed + movementWithScalar - camVelocityX ) < 0;
 					}
@@ -734,7 +734,7 @@ public class EZParallax : MonoBehaviour
 		float currentOrthoSizeRatio = 1;
 		if(m_currentOrthoSize != m_prevOrthoSize)
 		{
-			currentOrthoSizeRatio = 1 + ( (m_mainCamera.camera.orthographicSize / m_camStartOrthoSize) - 1) * (Mathf.Abs(targetElemTransform.position.z - m_playerObj.transform.position.z) * m_maxDistDiv);
+			currentOrthoSizeRatio = 1 + ( (m_mainCamera.GetComponent<Camera>().orthographicSize / m_camStartOrthoSize) - 1) * (Mathf.Abs(targetElemTransform.position.z - m_playerObj.transform.position.z) * m_maxDistDiv);
 			if(m_enableDollyZoom)
 			{
 				targetElement.UpdateScale(currentOrthoSizeRatio, m_mainCamera);
@@ -770,7 +770,7 @@ public class EZParallax : MonoBehaviour
 	{
 		EZParallaxObjectElement edgeElement = FindEdgeSpawningElement(targetPE, direction);
 		EZParallaxObjectElement prevEdgeElement = FindEdgeSpawningElement(targetPE, !direction);
-		Camera actualCamera = m_mainCamera.camera;
+		Camera actualCamera = m_mainCamera.GetComponent<Camera>();
 		float screenWidth = actualCamera.pixelWidth;
 		float newSpawnOffset = 0;
 		float newSpawnOffsetScreenSpace = 0;
@@ -1086,7 +1086,7 @@ public class EZParallax : MonoBehaviour
 		if(m_initialized)
 		{
 			SetElementScreenSpaceExtents(targetElement);
-			SpawnSingleElementDupes(targetElement, m_mainCamera.camera, m_mainCamera.camera.pixelWidth);
+			SpawnSingleElementDupes(targetElement, m_mainCamera.GetComponent<Camera>(), m_mainCamera.GetComponent<Camera>().pixelWidth);
 		}
 	}
 	
@@ -1124,7 +1124,7 @@ public class EZParallax : MonoBehaviour
 			m_rndDistArrayIndex = new int[m_randomSpawnCtr + 1];
 			m_rndDistArrayIndex = tempIdxArray;
 			
-			SpawnSingleElementDupes(targetElement, m_mainCamera.camera, m_mainCamera.camera.pixelWidth);
+			SpawnSingleElementDupes(targetElement, m_mainCamera.GetComponent<Camera>(), m_mainCamera.GetComponent<Camera>().pixelWidth);
 		}
 	}
 	

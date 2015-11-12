@@ -28,11 +28,11 @@ public class Player : MonoBehaviour {
 	
 	public void Jump() {
 		if (Main.isPlaying) {
-			audio.PlayOneShot(jump, 1);
+			GetComponent<AudioSource>().PlayOneShot(jump, 1);
 		}
 		//rigidbody2D.velocity = Vector3(Main.speed * 60,0,0);
-		rigidbody2D.velocity = Vector3.zero;
-		rigidbody2D.AddForce(jumpForce);
+		GetComponent<Rigidbody2D>().velocity = Vector3.zero;
+		GetComponent<Rigidbody2D>().AddForce(jumpForce);
 	}
 	
 	void Update () {
@@ -108,8 +108,8 @@ public class Player : MonoBehaviour {
 	IEnumerator Die() {
 		//if (!isDying) {
 			isDying = true;
-			Main.BGM.audio.Stop();
-			audio.PlayOneShot(gameOverSound);
+			Main.BGM.GetComponent<AudioSource>().Stop();
+			GetComponent<AudioSource>().PlayOneShot(gameOverSound);
 		Debug.Log("RESET 1");
 			yield return new WaitForSeconds(1.5f);
 			Debug.Log("RESET 2");
